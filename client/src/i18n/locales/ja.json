@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "ホーム",
+    "layoutBuilder": "レイアウトビルダー",
     "textStyler": "テキストスタイラー",
     "boxShadow": "ボックスシャドウ",
     "borderRadius": "角丸",

@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "Home",
+    "layoutBuilder": "Layout Builder",
     "textStyler": "Text Styler",
     "boxShadow": "Box Shadow",
     "borderRadius": "Border Radius",

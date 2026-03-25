@@ -9,6 +9,7 @@ export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const tools = [
+    { path: '/layout-builder', label: t('nav.layoutBuilder') },
     { path: '/text-styler', label: t('nav.textStyler') },
     { path: '/box-shadow', label: t('nav.boxShadow') },
     { path: '/border-radius', label: t('nav.borderRadius') },

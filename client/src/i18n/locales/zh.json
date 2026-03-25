@@ -1,6 +1,7 @@
 {
   "nav": {
     "home": "首页",
+    "layoutBuilder": "布局构建器",
     "textStyler": "文字样式",
     "boxShadow": "盒子阴影",
     "borderRadius": "圆角",
