@@ -42,11 +42,61 @@ export default function LayoutBuilder() {
   const [zoom, setZoom] = useState(0.8)
   const moveRef = useRef(null)
   const resizeRef = useRef(null)
+  const touchDragRef = useRef(null) // 팔레트 → 캔버스 터치 드래그
 
   const selEl = els.find(e => e.id === sel)
   const z = zoom
 
-  // ── Drop from palette ──
+  // ── 좌표 추출 (마우스/터치 공통) ──
+  function getXY(e) {
+    if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
+    return { x: e.clientX, y: e.clientY }
+  }
+
+  // ── 팔레트 터치 시작 ──
+  function onPaletteTouchStart(e, type) {
+    e.preventDefault()
+    const item = PALETTE.find(p => p.type === type)
+    const { x, y } = getXY(e)
+    // 손가락 따라다니는 고스트 엘리먼트
+    const ghost = document.createElement('div')
+    ghost.style.cssText = `position:fixed;pointer-events:none;z-index:9999;background:#6366f1;color:white;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;opacity:0.9;left:${x - 40}px;top:${y - 20}px;box-shadow:0 4px 12px rgba(99,102,241,0.4);`
+    ghost.textContent = item.label
+    document.body.appendChild(ghost)
+    touchDragRef.current = { type, ghost }
+  }
+
+  // ── 팔레트 터치 이동 ──
+  function onPaletteTouchMove(e) {
+    if (!touchDragRef.current) return
+    e.preventDefault()
+    const { x, y } = getXY(e)
+    touchDragRef.current.ghost.style.left = `${x - 40}px`
+    touchDragRef.current.ghost.style.top  = `${y - 20}px`
+  }
+
+  // ── 팔레트 터치 종료 → 캔버스에 드롭 ──
+  function onPaletteTouchEnd(e) {
+    if (!touchDragRef.current) return
+    const { type, ghost } = touchDragRef.current
+    document.body.removeChild(ghost)
+    touchDragRef.current = null
+
+    const { x, y } = getXY(e)
+    const rect = canvasRef.current?.getBoundingClientRect()
+    if (!rect) return
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) return
+
+    const item = PALETTE.find(p => p.type === type)
+    const cx = Math.round((x - rect.left) / z - item.d.w / 2)
+    const cy = Math.round((y - rect.top)  / z - item.d.h / 2)
+    const el = { id: uid(), type, x: Math.max(0, cx), y: Math.max(0, cy), ...item.d }
+    setEls(prev => [...prev, el])
+    setSel(el.id)
+  }
+
+  // ── Drop from palette (마우스) ──
   function onDrop(e) {
     e.preventDefault()
     const type = e.dataTransfer.getData('csskit-type')
@@ -61,53 +111,62 @@ export default function LayoutBuilder() {
     setSel(el.id)
   }
 
-  // ── Start moving ──
+  // ── 요소 이동 시작 (마우스/터치) ──
   function onElDown(e, id) {
     if (e.target.dataset.rh) return
     e.preventDefault()
     e.stopPropagation()
     setSel(id)
     const el = els.find(e => e.id === id)
-    moveRef.current = { id, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y }
+    const { x, y } = getXY(e)
+    moveRef.current = { id, sx: x, sy: y, ox: el.x, oy: el.y }
   }
 
-  // ── Start resizing ──
+  // ── 리사이즈 시작 (마우스/터치) ──
   function onHandleDown(e, id, h) {
     e.preventDefault()
     e.stopPropagation()
     const el = els.find(e => e.id === id)
-    resizeRef.current = { id, h, sx: e.clientX, sy: e.clientY, ox: el.x, oy: el.y, ow: el.w, oh: el.h }
+    const { x, y } = getXY(e)
+    resizeRef.current = { id, h, sx: x, sy: y, ox: el.x, oy: el.y, ow: el.w, oh: el.h }
   }
 
-  // ── Global mouse events ──
+  // ── 전역 이동/리사이즈 (마우스 + 터치) ──
   useEffect(() => {
     function onMove(e) {
+      if (e.touches) e.preventDefault()
+      const { x, y } = getXY(e)
       if (moveRef.current) {
         const { id, sx, sy, ox, oy } = moveRef.current
-        const dx = (e.clientX - sx) / z
-        const dy = (e.clientY - sy) / z
+        const dx = (x - sx) / z, dy = (y - sy) / z
         setEls(p => p.map(el => el.id !== id ? el : {
           ...el, x: Math.max(0, Math.round(ox + dx)), y: Math.max(0, Math.round(oy + dy))
         }))
       }
       if (resizeRef.current) {
         const { id, h, sx, sy, ox, oy, ow, oh } = resizeRef.current
-        const dx = (e.clientX - sx) / z
-        const dy = (e.clientY - sy) / z
-        let x = ox, y = oy, w = ow, ht = oh
-        if (h.includes('e')) w  = Math.max(20, ow + dx)
-        if (h.includes('s')) ht = Math.max(4,  oh + dy)
-        if (h.includes('w')) { w  = Math.max(20, ow - dx); x = ox + ow - w }
-        if (h.includes('n')) { ht = Math.max(4,  oh - dy); y = oy + oh - ht }
+        const dx = (x - sx) / z, dy = (y - sy) / z
+        let rx = ox, ry = oy, rw = ow, rh = oh
+        if (h.includes('e')) rw = Math.max(20, ow + dx)
+        if (h.includes('s')) rh = Math.max(4,  oh + dy)
+        if (h.includes('w')) { rw = Math.max(20, ow - dx); rx = ox + ow - rw }
+        if (h.includes('n')) { rh = Math.max(4,  oh - dy); ry = oy + oh - rh }
         setEls(p => p.map(el => el.id !== id ? el : {
-          ...el, x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(ht)
+          ...el, x: Math.round(rx), y: Math.round(ry), w: Math.round(rw), h: Math.round(rh)
         }))
       }
     }
     function onUp() { moveRef.current = null; resizeRef.current = null }
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
-    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp) }
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+    }
   }, [z])
 
   // ── Keyboard shortcuts ──
@@ -183,6 +242,9 @@ export default function LayoutBuilder() {
                 e.dataTransfer.setData('csskit-type', item.type)
                 e.dataTransfer.effectAllowed = 'copy'
               }}
+              onTouchStart={e => onPaletteTouchStart(e, item.type)}
+              onTouchMove={onPaletteTouchMove}
+              onTouchEnd={onPaletteTouchEnd}
               className="flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-grab active:cursor-grabbing hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 text-gray-700 dark:text-gray-300 transition-colors select-none"
             >
               <span className="w-5 text-center text-sm">{item.icon}</span>
@@ -297,6 +359,7 @@ export default function LayoutBuilder() {
                       overflow: 'hidden',
                     }}
                     onMouseDown={e => onElDown(e, el.id)}
+                    onTouchStart={e => onElDown(e, el.id)}
                     onClick={e => { e.stopPropagation(); setSel(el.id) }}
                   >
                     {el.type === 'image' ? (
@@ -328,6 +391,7 @@ export default function LayoutBuilder() {
                           ...HANDLE_POS[h],
                         }}
                         onMouseDown={e => onHandleDown(e, el.id, h)}
+                        onTouchStart={e => onHandleDown(e, el.id, h)}
                       />
                     ))}
                   </div>
