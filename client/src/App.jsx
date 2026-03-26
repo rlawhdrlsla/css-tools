@@ -15,14 +15,14 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
+          <Route index element={<LayoutBuilder />} />
+          <Route path="tools" element={<Home />} />
           <Route path="text-styler" element={<TextStyler />} />
           <Route path="box-shadow" element={<BoxShadow />} />
           <Route path="border-radius" element={<BorderRadius />} />
           <Route path="flexbox" element={<FlexboxBuilder />} />
           <Route path="button" element={<ButtonGenerator />} />
           <Route path="box-model" element={<BoxModel />} />
-          <Route path="layout-builder" element={<LayoutBuilder />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

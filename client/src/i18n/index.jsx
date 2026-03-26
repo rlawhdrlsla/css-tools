@@ -21,17 +21,23 @@ export const I18nContext = createContext(null)
 
 export function I18nProvider({ children }) {
   const [lang, setLang] = useState(detectLang)
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
 
   useEffect(() => {
     localStorage.setItem('lang', lang)
   }, [lang])
+
+  useEffect(() => {
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+    document.documentElement.classList.toggle('dark', dark)
+  }, [dark])
 
   function t(path) {
     return get(locales[lang], path) ?? get(locales.en, path) ?? path
   }
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t, langs: Object.keys(locales) }}>
+    <I18nContext.Provider value={{ lang, setLang, t, langs: Object.keys(locales), dark, toggleDark: () => setDark(d => !d) }}>
       {children}
     </I18nContext.Provider>
   )
