@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import TextStyler from './pages/TextStyler'
@@ -12,11 +13,20 @@ import NotFound from './pages/NotFound'
 import About from './pages/About'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
+import Admin from './pages/Admin'
 
 export default function App() {
+  useEffect(() => {
+    if (window.location.pathname.startsWith('/admin')) return
+    if (sessionStorage.getItem('visited')) return
+    sessionStorage.setItem('visited', '1')
+    fetch('/api/visit', { method: 'POST' }).catch(() => {})
+  }, [])
+
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/admin" element={<Admin />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<LayoutBuilder />} />
           <Route path="tools" element={<Home />} />
