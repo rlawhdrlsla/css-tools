@@ -125,8 +125,15 @@ export default function Layout() {
       </main>
 
       <footer className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 mt-12">
-        <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-600">
-          © {new Date().getFullYear()} CSSKit. {t('footer.copy')}
+        <div className="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-600 space-y-2">
+          <div className="flex items-center justify-center gap-4">
+            <NavLink to="/about" className="hover:text-gray-600 dark:hover:text-gray-400 transition-colors">소개</NavLink>
+            <span>·</span>
+            <NavLink to="/privacy" className="hover:text-gray-600 dark:hover:text-gray-400 transition-colors">개인정보처리방침</NavLink>
+            <span>·</span>
+            <NavLink to="/terms" className="hover:text-gray-600 dark:hover:text-gray-400 transition-colors">이용약관</NavLink>
+          </div>
+          <div>© {new Date().getFullYear()} CSSKit. {t('footer.copy')}</div>
         </div>
       </footer>
     </div>

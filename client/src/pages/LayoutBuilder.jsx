@@ -39,6 +39,7 @@ export default function LayoutBuilder() {
   const [els, setEls] = useState([])
   const [sel, setSel] = useState(null)
   const [showCode, setShowCode] = useState(false)
+  const [codeTab, setCodeTab] = useState('css') // 'css' | 'html'
   const [zoom, setZoom] = useState(0.8)
   const moveRef = useRef(null)
   const resizeRef = useRef(null)
@@ -193,7 +194,7 @@ export default function LayoutBuilder() {
   function genCSS() {
     if (!els.length) return '/* 캔버스에 요소를 추가하세요 */'
     return [
-      '.canvas {\n  position: relative;\n  width: 1024px;\n  height: 768px;\n}',
+      '.layout-container {\n  position: relative;\n  width: 1024px;\n  height: 768px;\n}',
       ...els.map((el, i) => {
         const cls = `.${el.type}-${i + 1}`
         const props = [
@@ -212,6 +213,16 @@ export default function LayoutBuilder() {
         return `${cls} {\n  ${props.join('\n  ')}\n}`
       })
     ].join('\n\n')
+  }
+
+  function genHTML() {
+    if (!els.length) return '<!-- 캔버스에 요소를 추가하세요 -->'
+    const inner = els.map((el, i) => {
+      const cls = `${el.type}-${i + 1}`
+      const content = el.text ? el.text : el.type === 'image' ? '<!-- image -->' : ''
+      return `  <div class="${cls}">${content}</div>`
+    }).join('\n')
+    return `<div class="layout-container">\n${inner}\n</div>`
   }
 
   const ToolBtn = ({ onClick, label, danger }) => (
@@ -291,8 +302,20 @@ export default function LayoutBuilder() {
 
         {/* Canvas or Code */}
         {showCode ? (
-          <div className="flex-1 overflow-auto p-6 bg-gray-50 dark:bg-gray-950">
-            <CodeBlock code={genCSS()} />
+          <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 flex flex-col">
+            <div className="flex gap-1 px-6 pt-4">
+              {['css', 'html'].map(tab => (
+                <button key={tab} onClick={() => setCodeTab(tab)}
+                  className={`text-xs px-3 py-1.5 rounded-t font-medium uppercase tracking-wide transition-colors ${
+                    codeTab === tab
+                      ? 'bg-white dark:bg-gray-900 text-indigo-600 dark:text-indigo-400 border border-b-0 border-gray-200 dark:border-gray-700'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
+                  }`}>{tab}</button>
+              ))}
+            </div>
+            <div className="flex-1 overflow-auto px-6 pb-6">
+              <CodeBlock code={codeTab === 'css' ? genCSS() : genHTML()} />
+            </div>
           </div>
         ) : (
           <div className="flex-1 overflow-auto p-8 flex items-start justify-center bg-gray-100 dark:bg-gray-950">

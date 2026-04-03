@@ -9,6 +9,9 @@ import ButtonGenerator from './pages/ButtonGenerator'
 import BoxModel from './pages/BoxModel'
 import LayoutBuilder from './pages/LayoutBuilder'
 import NotFound from './pages/NotFound'
+import About from './pages/About'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 
 export default function App() {
   return (
@@ -23,6 +26,9 @@ export default function App() {
           <Route path="flexbox" element={<FlexboxBuilder />} />
           <Route path="button" element={<ButtonGenerator />} />
           <Route path="box-model" element={<BoxModel />} />
+          <Route path="about" element={<About />} />
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
