@@ -266,7 +266,7 @@ export default function LayoutBuilder() {
       </div>
 
       {/* ── Canvas Area ── */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
 
         {/* Toolbar */}
         <div className="h-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-1 shrink-0">
