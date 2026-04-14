@@ -1,6 +1,7 @@
 import { Outlet, NavLink } from 'react-router-dom'
 import { useState } from 'react'
 import { useI18n } from '../i18n/index.jsx'
+import AdBanner from './AdBanner.jsx'
 
 const LANG_LABELS = { en: 'EN', ko: '한', ja: '日', zh: '中' }
 
@@ -119,6 +120,8 @@ export default function Layout() {
           </div>
         )}
       </header>
+
+      <AdBanner className="w-full" />
 
       <main className="flex-1">
         <Outlet />

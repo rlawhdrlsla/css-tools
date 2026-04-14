@@ -106,6 +106,26 @@
     "subtitle": "URLをご確認ください。",
     "goHome": "ホームへ戻る"
   },
+  "layoutBuilder": {
+    "title": "レイアウトビルダー",
+    "subtitle": "要素をドラッグしてレイアウトを構成し、CSSコードを確認してください。",
+    "elements": "Elements",
+    "toBack": "後ろへ",
+    "toFront": "前へ",
+    "duplicate": "複製 ⌘D",
+    "delete": "削除 Del",
+    "showCode": "CSSコード",
+    "hideCode": "← キャンバス",
+    "reset": "リセット",
+    "canvasSize": "キャンバス",
+    "emptyHint": "左パネルから要素をドラッグしてください",
+    "emptyHintSub": "Drag elements from the left panel",
+    "position": "位置 / サイズ",
+    "background": "背景色",
+    "textColor": "テキスト色",
+    "text": "テキスト",
+    "placeholder": "なし"
+  },
   "footer": {
     "copy": "無料CSSジェネレーターツール集。"
   }

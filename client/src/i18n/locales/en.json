@@ -106,6 +106,26 @@
     "subtitle": "Please check the URL.",
     "goHome": "Go Home"
   },
+  "layoutBuilder": {
+    "title": "Layout Builder",
+    "subtitle": "Drag elements to build your layout and get the CSS code.",
+    "elements": "Elements",
+    "toBack": "Back",
+    "toFront": "Front",
+    "duplicate": "Duplicate ⌘D",
+    "delete": "Delete Del",
+    "showCode": "CSS Code",
+    "hideCode": "← Canvas",
+    "reset": "Reset",
+    "canvasSize": "Canvas",
+    "emptyHint": "Drag elements from the left panel",
+    "emptyHintSub": "요소를 드래그해서 추가하세요",
+    "position": "Position / Size",
+    "background": "Background",
+    "textColor": "Text Color",
+    "text": "Text",
+    "placeholder": "None"
+  },
   "footer": {
     "copy": "Free CSS generator tools."
   }

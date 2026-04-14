@@ -106,6 +106,26 @@
     "subtitle": "주소를 다시 확인해 주세요.",
     "goHome": "홈으로 돌아가기"
   },
+  "layoutBuilder": {
+    "title": "레이아웃 빌더",
+    "subtitle": "요소를 드래그해서 레이아웃을 구성하고 CSS 코드를 확인하세요.",
+    "elements": "Elements",
+    "toBack": "뒤로",
+    "toFront": "앞으로",
+    "duplicate": "복제 ⌘D",
+    "delete": "삭제 Del",
+    "showCode": "CSS 코드",
+    "hideCode": "← 캔버스",
+    "reset": "초기화",
+    "canvasSize": "캔버스",
+    "emptyHint": "왼쪽 패널에서 요소를 드래그하세요",
+    "emptyHintSub": "Drag elements from the left panel",
+    "position": "위치 / 크기",
+    "background": "배경색",
+    "textColor": "텍스트 색",
+    "text": "텍스트",
+    "placeholder": "없음"
+  },
   "footer": {
     "copy": "무료 CSS 생성기 도구 모음."
   }

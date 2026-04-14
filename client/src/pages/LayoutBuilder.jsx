@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import CodeBlock from '../components/CodeBlock'
+import { useI18n } from '../i18n'
 
-const CW = 1024
-const CH = 768
+const DEFAULT_CW = 1024
+const DEFAULT_CH = 768
 
 function uid() { return Math.random().toString(36).slice(2, 8) }
 
@@ -15,8 +16,8 @@ const PALETTE = [
   { type: 'image',   label: 'Image',    icon: '🖼', d: { w:200, h:140, bg:'#e5e7eb',   br:0, op:1, fg:'#9ca3af', text:'',         fs:14, fw:400, shadow:false } },
   { type: 'circle',  label: 'Circle',   icon: '●',  d: { w:80,  h:80,  bg:'#fbbf24',   br:50,op:1, fg:'#78350f', text:'',         fs:14, fw:400, shadow:false } },
   { type: 'divider', label: 'Divider',  icon: '—',  d: { w:400, h:2,   bg:'#e5e7eb',   br:0, op:1, fg:'',        text:'',         fs:14, fw:400, shadow:false } },
-  { type: 'navbar',  label: 'Navbar',   icon: '☰',  d: { w:CW,  h:60,  bg:'#1e293b',   br:0, op:1, fg:'#f8fafc', text:'Logo',     fs:16, fw:700, shadow:false } },
-  { type: 'sidebar', label: 'Sidebar',  icon: '▌',  d: { w:220, h:CH,  bg:'#f8fafc',   br:0, op:1, fg:'#374151', text:'',         fs:14, fw:400, shadow:false } },
+  { type: 'navbar',  label: 'Navbar',   icon: '☰',  d: { w:DEFAULT_CW, h:60, bg:'#1e293b',  br:0, op:1, fg:'#f8fafc', text:'Logo', fs:16, fw:700, shadow:false } },
+  { type: 'sidebar', label: 'Sidebar',  icon: '▌',  d: { w:220, h:DEFAULT_CH, bg:'#f8fafc', br:0, op:1, fg:'#374151', text:'', fs:14, fw:400, shadow:false } },
   { type: 'badge',   label: 'Badge',    icon: '◉',  d: { w:80,  h:28,  bg:'#dcfce7',   br:20,op:1, fg:'#166534', text:'Badge',    fs:12, fw:600, shadow:false } },
   { type: 'input',   label: 'Input',    icon: '▭',  d: { w:240, h:44,  bg:'#ffffff',   br:6, op:1, fg:'#9ca3af', text:'입력창...', fs:14, fw:400, shadow:false, border:true } },
 ]
@@ -35,12 +36,15 @@ const HANDLE_POS = {
 const HANDLE_CURSOR = { nw:'nw-resize',n:'n-resize',ne:'ne-resize',e:'e-resize',se:'se-resize',s:'s-resize',sw:'sw-resize',w:'w-resize' }
 
 export default function LayoutBuilder() {
+  const { t } = useI18n()
   const canvasRef = useRef(null)
   const [els, setEls] = useState([])
   const [sel, setSel] = useState(null)
   const [showCode, setShowCode] = useState(false)
   const [codeTab, setCodeTab] = useState('css') // 'css' | 'html'
   const [zoom, setZoom] = useState(0.8)
+  const [CW, setCW] = useState(DEFAULT_CW)
+  const [CH, setCH] = useState(DEFAULT_CH)
   const moveRef = useRef(null)
   const resizeRef = useRef(null)
   const touchDragRef = useRef(null) // 팔레트 → 캔버스 터치 드래그
@@ -192,9 +196,9 @@ export default function LayoutBuilder() {
   const toBack  = () => setEls(p => { const el = p.find(e => e.id === sel); return [el, ...p.filter(e => e.id !== sel)] })
 
   function genCSS() {
-    if (!els.length) return '/* 캔버스에 요소를 추가하세요 */'
+    if (!els.length) return '/* Add elements to the canvas */'
     return [
-      '.layout-container {\n  position: relative;\n  width: 1024px;\n  height: 768px;\n}',
+      `.layout-container {\n  position: relative;\n  width: ${CW}px;\n  height: ${CH}px;\n}`,
       ...els.map((el, i) => {
         const cls = `.${el.type}-${i + 1}`
         const props = [
@@ -216,7 +220,7 @@ export default function LayoutBuilder() {
   }
 
   function genHTML() {
-    if (!els.length) return '<!-- 캔버스에 요소를 추가하세요 -->'
+    if (!els.length) return '<!-- Add elements to the canvas -->'
     const inner = els.map((el, i) => {
       const cls = `${el.type}-${i + 1}`
       const content = el.text ? el.text : el.type === 'image' ? '<!-- image -->' : ''
@@ -242,7 +246,7 @@ export default function LayoutBuilder() {
       {/* ── Palette ── */}
       <div className="w-40 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
         <div className="px-3 py-2.5 border-b border-gray-100 dark:border-gray-800">
-          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Elements</p>
+          <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">{t('layoutBuilder.elements')}</p>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
           {PALETTE.map(item => (
@@ -270,19 +274,28 @@ export default function LayoutBuilder() {
 
         {/* Toolbar */}
         <div className="h-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-3 gap-1 shrink-0">
-          <span className="text-xs text-gray-400 dark:text-gray-600 mr-1 font-mono">{els.length}개</span>
+          <span className="text-xs text-gray-400 dark:text-gray-600 mr-1 font-mono hidden sm:inline">{els.length}</span>
 
           {selEl && (
             <>
               <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-0.5" />
-              <ToolBtn onClick={toBack}   label="뒤로" />
-              <ToolBtn onClick={toFront}  label="앞으로" />
-              <ToolBtn onClick={dupSel}   label="복제 ⌘D" />
-              <ToolBtn onClick={delSel}   label="삭제 Del" danger />
+              <ToolBtn onClick={toBack}   label={t('layoutBuilder.toBack')} />
+              <ToolBtn onClick={toFront}  label={t('layoutBuilder.toFront')} />
+              <ToolBtn onClick={dupSel}   label={t('layoutBuilder.duplicate')} />
+              <ToolBtn onClick={delSel}   label={t('layoutBuilder.delete')} danger />
             </>
           )}
 
           <div className="ml-auto flex items-center gap-1">
+            <span className="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">{t('layoutBuilder.canvasSize')}</span>
+            <input type="number" value={CW} min={320} max={3840}
+              onChange={e => setCW(Math.max(320, +e.target.value))}
+              className="w-16 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-indigo-400" />
+            <span className="text-xs text-gray-300 dark:text-gray-600">×</span>
+            <input type="number" value={CH} min={240} max={2160}
+              onChange={e => setCH(Math.max(240, +e.target.value))}
+              className="w-16 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-indigo-400" />
+            <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
             <button onClick={() => setZoom(z => Math.max(0.25, +(z - 0.25).toFixed(2)))}
               className="w-7 h-7 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 flex items-center justify-center text-base">−</button>
             <span className="text-xs text-gray-400 dark:text-gray-500 w-10 text-center font-mono">{Math.round(z * 100)}%</span>
@@ -291,11 +304,11 @@ export default function LayoutBuilder() {
             <div className="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1" />
             <button onClick={() => setShowCode(s => !s)}
               className={`text-xs px-3 py-1 rounded font-medium ${showCode ? 'bg-gray-800 dark:bg-gray-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'}`}>
-              {showCode ? '← 캔버스' : 'CSS 코드'}
+              {showCode ? t('layoutBuilder.hideCode') : t('layoutBuilder.showCode')}
             </button>
             <button onClick={() => { setEls([]); setSel(null) }}
               className="text-xs px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 dark:text-gray-600">
-              초기화
+              {t('layoutBuilder.reset')}
             </button>
           </div>
         </div>
@@ -345,8 +358,8 @@ export default function LayoutBuilder() {
               {els.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center">
-                    <p className="text-gray-300 text-sm font-medium">왼쪽 패널에서 요소를 드래그하세요</p>
-                    <p className="text-gray-200 text-xs mt-1">Drag elements from the left panel</p>
+                    <p className="text-gray-300 text-sm font-medium">{t('layoutBuilder.emptyHint')}</p>
+                    <p className="text-gray-200 text-xs mt-1">{t('layoutBuilder.emptyHintSub')}</p>
                   </div>
                 </div>
               )}
@@ -435,7 +448,7 @@ export default function LayoutBuilder() {
 
           <div className="p-3 space-y-4">
             {/* Position / Size */}
-            <Sec label="위치 / 크기">
+            <Sec label={t('layoutBuilder.position')}>
               <div className="grid grid-cols-2 gap-1.5">
                 {[['X','x'],['Y','y'],['W','w'],['H','h']].map(([l, k]) => (
                   <div key={k}>
@@ -448,7 +461,7 @@ export default function LayoutBuilder() {
             </Sec>
 
             {/* Background */}
-            <Sec label="배경색">
+            <Sec label={t('layoutBuilder.background')}>
               <div className="flex gap-2 items-center">
                 <input type="color"
                   value={selEl.bg === 'transparent' ? '#ffffff' : selEl.bg}
@@ -460,7 +473,7 @@ export default function LayoutBuilder() {
             </Sec>
 
             {/* Text color */}
-            <Sec label="텍스트 색">
+            <Sec label={t('layoutBuilder.textColor')}>
               <div className="flex gap-2 items-center">
                 <input type="color"
                   value={selEl.fg || '#000000'}
@@ -485,9 +498,9 @@ export default function LayoutBuilder() {
 
             {/* Text */}
             {selEl.text !== undefined && (
-              <Sec label="텍스트">
+              <Sec label={t('layoutBuilder.text')}>
                 <input type="text" value={selEl.text} onChange={e => upd('text', e.target.value)}
-                  placeholder="없음"
+                  placeholder={t('layoutBuilder.placeholder')}
                   className="w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 rounded px-2 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400" />
               </Sec>
             )}
